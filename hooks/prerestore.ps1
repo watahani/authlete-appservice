@@ -37,6 +37,8 @@ if ($y.ToLower() -ne "y") {
     exit 1;
 }
 
+git submodule update --init --recursive 
+
 $orgToken = & azd env get-value AUTHLETE_ORGANIZATION_ACCESS_TOKEN 2>$null;
 if ($LASTEXITCODE -eq 1) {
     $orgToken = Read-Host -MaskInput "Enter Authlete Organization Access Token";
