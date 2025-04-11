@@ -1,0 +1,3 @@
+[submodule "src/java-oauth-server"]
+	path = src/java-oauth-server
+	url = https://github.com/authlete/java-oauth-server.git
