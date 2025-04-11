@@ -1,0 +1,43 @@
+FROM maven:3.9.9-eclipse-temurin-21
+
+RUN apt-get update && \
+    # install nodejs
+    apt-get install -y curl && \
+    curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs
+
+RUN curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.407 --install-dir /ubuntu/.dotnet
+    
+ENV DOTNET_ROOT /ubuntu/.dotnet
+ENV PATH "${PATH}:${DOTNET_ROOT}:${DOTNET_ROOT}/tools"
+
+RUN chown -R ubuntu:ubuntu /ubuntu/
+
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg &&\
+    mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg &&\
+    sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-noble-prod noble main" > /etc/apt/sources.list.d/dotnetdev.list' &&\
+    apt-get update && apt-get install azure-functions-core-tools-4 -y
+
+# https://learn.microsoft.com/en-us/dotnet/core/runtime-config/globalization
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+
+EXPOSE 8080
+
+RUN mkdir -p /authlete/app && chmod -R 777 /authlete/app
+RUN mkdir -p /usr/share/maven/ref/repository && chmod -R 777 /usr/share/maven/ref/repository
+
+USER ubuntu
+
+COPY src/java-oauth-server/ /authlete/app
+
+WORKDIR /authlete/app
+
+RUN mvn -s /usr/share/maven/ref/settings-docker.xml dependency:resolve
+
+USER root
+# Import the root certificate of Open Banking Brasil Sandbox
+RUN certs/import-certificate.sh certs/Open_Banking_Brasil_Sandbox_Root_G2.pem
+
+USER ubuntu
+
+CMD ["mvn", "-s", "/usr/share/maven/ref/settings-docker.xml", "clean", "jetty:run"]

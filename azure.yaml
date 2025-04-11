@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: azd-test
+hooks:
+  preup:
+    shell: pwsh
+    run: ./hooks/prerestore.ps1
+    interactive: true
+  postdeploy: 
+    shell: pwsh
+    run: ./hooks/postdeploy.ps1
+    interactive: true
+services:
+  authz:
+    project: ./src/java-oauth-server
+    language: java
+    type: war
+    host: appservice
+  client:
+    project: ./src/client
+    language: csharp
+    host: appservice
+  api:
+    project: ./src/api
+    language: csharp
+    host: appservice
+infra:
+  provider: bicep
