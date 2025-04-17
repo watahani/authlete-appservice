@@ -75,3 +75,11 @@ catch {
     Write-Host "Error updating client settings";
     throw;
 }
+
+Write-Host -ForegroundColor Green "==========================================================================";
+Write-Host -ForegroundColor Green "  removing src/java-oauth-server/src/main/resources/authlete.properties...";
+Write-Host -ForegroundColor Green "==========================================================================";
+
+if (Test-Path "src/java-oauth-server/src/main/resources/authlete.properties") {
+    Remove-Item -Path "src/java-oauth-server/src/main/resources/authlete.properties" -Force;
+}

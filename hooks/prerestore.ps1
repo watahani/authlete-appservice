@@ -134,6 +134,7 @@ $service.supportedAuthorizationDetailsTypes = @("authlete_mcp");'
 Set-OrAddProperty -Object $service -PropertyName "supportedGrantTypes" -Value @("AUTHORIZATION_CODE", "REFRESH_TOKEN");
 Set-OrAddProperty -Object $service -PropertyName "supportedResponseTypes" -Value @("CODE");
 Set-OrAddProperty -Object $service -PropertyName "supportedAuthorizationDetailsTypes" -Value @("authlete_mcp");
+Set-OrAddProperty -Object $service -PropertyName "claimShortcutRestrictive" -Value $false;
 
 $service = Invoke-RestMethod -Uri "${authleteBaseUrl}/api/${apiKey}/service/update" -ContentType "application/json" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes(($service | ConvertTo-Json -Depth 10))) -ErrorAction Stop
 
