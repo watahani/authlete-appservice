@@ -6,4 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>f172ca4b-1694-43eb-b76e-d27ba2980134</UserSecretsId>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Azure.AI.OpenAI" Version="2.2.0-beta.4" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.4.0-preview.1.25207.5" />
+    <PackageReference Include="ModelContextProtocol" Version="0.1.0-preview.9" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.1.0-preview.9" />
+</ItemGroup>
 </Project>

@@ -15,6 +15,9 @@ authzServer は [java-oauth-server](https://github.com/authlete/java-oauth-serve
 
 認証認可部分には App Service の組み込み認証を利用しており、実装は組み込み認証の呼び出しと、組み込み認証から返却されるクレームのチェックだけで済むと思ったのですが、Microsoft.Identity.Web の [AppServicesAuthentication Scheme の実装](https://github.com/AzureAD/microsoft-identity-web/blob/5dfeb454aa4d7b6262fb1d3164cb7b465d38f476/src/Microsoft.Identity.Web/AppServicesAuth/AppServicesAuthenticationInformation.cs) が、Microsoft Entra ID のクレームしか受け付けないものだったので、Middle Ware のカスタマイズが必要になってしまった。
 
+https://github.com/Azure/Azure-Functions/issues/2285
+
+
 ## Authlete の設定
 
 Authlete サーバーの発行するアクセストークンは既定では識別子型のトークンです。Azure では Microsoft Entra ID が内包型トークンを発行するため、多くのサービスが内包型トークン前提で動作します。

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Azure OpenAI Chat</title>
+    <style>
+        body { font-family: sans-serif; }
+        #chatbox { width: 80%; height: 300px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; }
+        #messageInput { width: 70%; padding: 10px; margin-top: 10px; }
+        #sendMessage { padding: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Azure OpenAI Chat</h1>
+    <div id="chatbox"></div>
+    <input type="text" id="messageInput" placeholder="Enter your message">
+    <button id="sendMessage">Send</button>
+
+    <p><a href="/startAuth?authorization?authorization_details=%5B%7B%22type%22%3A%22service-api%22%2C%22actions%22%3A%5B%22read%22%2C%22write%22%5D%7D%5D">Grant the permission for updating servicve</a></p>
+    <p><a href="/startAuth?authorization?authorization_details=%5B%7B%22type%22%3A%22client-api%22%2C%22actions%22%3A%5B%22read%22%2C%22write%22%5D%7D%5D">Grant the permission for updating servicve</a></p>
+
+    <script>
+        const chatbox = document.getElementById('chatbox');
+        const messageInput = document.getElementById('messageInput');
+        const sendMessageButton = document.getElementById('sendMessage');
+
+        let messages = [];
+
+        sendMessageButton.addEventListener('click', async () => {
+            const messageText = messageInput.value.trim();
+            if (messageText) {
+                const userMessage = {
+                    Role: 'User',
+                    Contents: [{ $type: 'text', Text: messageText }]
+                };
+                messages.push(userMessage);
+                displayMessage('User', messageText);
+                messageInput.value = '';
+
+                // Disable input and button
+                messageInput.disabled = true;
+                sendMessageButton.disabled = true;
+
+                try {
+                    const response = await fetch('/callApi', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(messages)
+                    });
+
+                    if (response.ok) {
+                        const responseMessages = await response.json();
+                        if (responseMessages && responseMessages.length > 0) {
+                            responseMessages.forEach(msg => {
+                                messages.push(msg); // Add all received messages to the history
+                                let contentText = '';
+
+
+                                if (msg.contents && msg.contents.length > 0) {
+                                    msg.contents.forEach(content => {
+                                        if(content.$type === 'text') {
+                                            contentText += `${content.$type}: ${content.text} `;
+                                        }
+                                        else if(content.$type === 'functionCall'){
+                                            contentText += `Call ${content.name} (${JSON.stringify(content.arguments)}) `;
+                                        } else if(content.$type === 'functionResult') {
+                                            contentText += `${content.$type}: ${content.result.content[0].text} `;
+                                        } 
+                                       // Add handling for other content types if necessary
+                                    });
+                                }
+                                displayMessage(msg.role, contentText.trim());
+                            });
+                        } else {
+                            displayMessage('System', 'Error: Empty response from API.');
+                        }
+                    } else {
+                        displayMessage('System', `Error: ${response.status}`);
+                    }
+                } catch (error) {
+                    displayMessage('System', `Error: ${error}`);
+                } finally {
+                    // Re-enable input and button
+                    messageInput.disabled = false;
+                    sendMessageButton.disabled = false;
+                }
+            }
+        });
+
+        function displayMessage(role, text) {
+            const messageElement = document.createElement('p');
+            messageElement.innerHTML = `<strong>${role}:</strong> ${text.replace(/\n/g, '<br>')}`;
+            chatbox.appendChild(messageElement);
+            chatbox.scrollTop = chatbox.scrollHeight; // Auto-scroll to the latest message
+        }
+    </script>
+</body>
+</html>

@@ -14,10 +14,15 @@ param location string = 'japaneast'
 @description('Client ID for client server')
 param clientId string
 
+// TODO - store this in Key Vault
 @description('Client secret for client server')
 param clientSecret string
 
 param linuxFxVersion string = 'DOTNETCORE|9.0'
+
+// TODO - store this in Key Vault
+param azureOpenAIKey string
+param azureOpenAIEndpoint string
 
 // Tags that should be applied to all resources.
 //
@@ -88,6 +93,14 @@ resource client 'Microsoft.Web/sites@2023-01-01' = {
         {
           name: 'RESOURCE_IDENTIFIER'
           value: 'https://${api.properties.defaultHostName}'
+        }
+        {
+          name: 'AZURE_OPENAI_ENDPOINT'
+          value: azureOpenAIEndpoint
+        }
+        {
+          name: 'AZURE_OPENAI_API_KEY'
+          value: azureOpenAIKey
         }
       ]
     }
@@ -195,7 +208,7 @@ resource apiAuthConfig 'Microsoft.Web/sites/config@2022-09-01' = {
       runtimeVersion: '~1'
     }
     globalValidation: {
-      requireAuthentication: true
+      requireAuthentication: false
       unauthenticatedClientAction: 'Return401'
     }
     identityProviders: {

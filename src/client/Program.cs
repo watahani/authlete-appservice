@@ -1,18 +1,33 @@
 using System.Collections;
 using System.Net.Mime;
 using System.Security.Claims;
-using System.Text;
-using System.Text.Json;
 using Authlete.AppService.Demo;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Identity.Web;
+using ModelContextProtocol.Client;
+using ModelContextProtocol.Protocol.Transport;
+using Azure.AI.OpenAI;
+using Azure;
+using Microsoft.Extensions.AI;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+string endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT");
+string key = Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY");
+var RESOURCE_IDENTIFIER = Environment.GetEnvironmentVariable("RESOURCE_IDENTIFIER");
+
+if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(key))
+{
+    Console.WriteLine("Please set the environment variables AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY.");
+    return;
+}
+
+AzureOpenAIClient azureOpenAIClient = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(key));
+
 builder.Services
     .AddHttpClient()
+    .AddSingleton(azureOpenAIClient)
     .AddLogging()
     .AddAuthorization()
     .AddAuthentication(option =>
@@ -24,7 +39,7 @@ builder.Services
         AppServiceAuthenticationExternalProviderDefaults.AuthenticationScheme, options =>
         {
             options.responseStatusCode = StatusCodes.Status302Found;
-            options.authorizationOpetionQueries = "resource=" + Environment.GetEnvironmentVariable("RESOURCE_IDENTIFIER");
+            options.authorizationOpetionQueries = "resource=" + RESOURCE_IDENTIFIER;
             options.nameType = "preferred_username";
             options.roleType = ClaimsIdentity.DefaultRoleClaimType;
         }
@@ -35,8 +50,10 @@ var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
 
+if (app.Environment.IsDevelopment()){
+    app.UseDeveloperExceptionPage();
 
-var RESOURCE_IDENTIFIER = Environment.GetEnvironmentVariable("RESOURCE_IDENTIFIER");
+}
 
 
 app.MapGet("/", (HttpRequest req) =>
@@ -44,40 +61,69 @@ app.MapGet("/", (HttpRequest req) =>
     var principal = req.HttpContext.User;
     if (principal.Identity?.IsAuthenticated == true)
     {
-        return Results.Text($"<h1>Hello {principal.Identity.Name} ({principal.GetNameIdentifierId()})</h1>", MediaTypeNames.Text.Html);
+        return Results.Text($"<h1>Hello {principal.Identity.Name}</h1> <a href=\"/chat\">start chat</a><br/><a href=\"/.auth/logout?post_logout_redirect_uri=/\">Logout</a>", MediaTypeNames.Text.Html);
     }
     else
     {
-        return Results.Text($"<a href=\"/.auth/login/authlete?resource={RESOURCE_IDENTIFIER}\">Login</a>", MediaTypeNames.Text.Html);
+        return Results.Text($"<a href=\"/startAuth\">Login</a>", MediaTypeNames.Text.Html);
     }
 });
 
-app.MapGet("/callApi", (HttpRequest req, IHttpClientFactory factory, [FromServices] ILogger<Program> log) =>
+app.MapGet("/chat", [Authorize]
+async () =>
 {
-    var accessToken = req.Headers.TryGetValue("X-MS-TOKEN-AUTHLETE-ACCESS-TOKEN", out var token) ? token.ToString() : null;
-    var httpClient = factory.CreateClient();
+    var htmlContent = await File.ReadAllTextAsync("chat/index.html");
+    return Results.Content(htmlContent, "text/html");
+});
 
-    using(StringContent json = new(JsonSerializer.Serialize(new { name = "Authlete" }), Encoding.UTF8, MediaTypeNames.Application.Json))
+app.MapGet("/startAuth",[Authorize] async (HttpRequest req) =>
+{
+    var referer = req.Headers["Referer"].ToString();
+    var queries = req.Query;
+    queries.Add("state", referer);
+    queries.Add("resource", RESOURCE_IDENTIFIER);
+    rerurn Results.Redirect($"/.auth/login/authlete?{queries.ToString()}");
+});
+
+app.MapPost("/callApi", [Authorize] async ([FromBody] List<Microsoft.Extensions.AI.ChatMessage> messages, HttpRequest req, IHttpClientFactory factory, [FromServices] ILogger<Program> log, AzureOpenAIClient azureOpenAIClient) =>
+{
+    // debug messages
+    foreach (var message in messages)
     {
-        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-        // var res = httpClient.PostAsync(RESOURCE_IDENTIFIER, json);
-        var res = httpClient.GetAsync(RESOURCE_IDENTIFIER);
-        if (res.Result.IsSuccessStatusCode)
-        {
-            return Results.Ok(res.Result.Content.ReadAsStringAsync().Result);
-        }
-        else
-        {
-            log.LogError($"Error: {res.Result.StatusCode} {res.Result.Content.ReadAsStringAsync().Result}");
-            foreach (var header in res.Result.Headers)
-            {
-                log.LogInformation($"{header.Key}: {header.Value}");
-            }
-            log.LogInformation(RESOURCE_IDENTIFIER);
-
-            return Results.Text($"<a href=\"/.auth/login/authlete?resource={RESOURCE_IDENTIFIER}\">Login</a>", MediaTypeNames.Text.Html);
-        }
+        Console.WriteLine($"{message.Role}: {message.Text}");
     }
+    var accessToken = req.Headers.TryGetValue("X-MS-TOKEN-AUTHLETE-ACCESS-TOKEN", out var token) ? token.ToString() : null;
+
+    IClientTransport clientTransport = new SseClientTransport(new SseClientTransportOptions
+    {
+        Name = "Authlete",
+        Endpoint = new Uri(RESOURCE_IDENTIFIER),
+        AdditionalHeaders = new Dictionary<string, string>()
+        {
+           {"Authorization", $"Bearer {accessToken}"}
+        }
+    });
+
+    var client = await McpClientFactory.CreateAsync(clientTransport);
+    var mcpTools = await client.ListToolsAsync();
+
+#pragma warning disable OPENAI001 // Suppress warning for evaluation-only API usage
+    var chatClient = azureOpenAIClient.GetChatClient("gpt-4o");
+
+    var res = await chatClient.AsIChatClient().AsBuilder().UseFunctionInvocation().Build()
+                                .GetResponseAsync(messages, new ChatOptions
+                                {
+                                    ToolMode = ChatToolMode.Auto,
+                                    Tools = [.. mcpTools]
+                                });
+
+    foreach (var message in res.Messages)
+    {
+        Console.WriteLine($"{message.Role}: {message.Text}");
+        //show json response
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(message));
+    }
+    return Results.Ok(res.Messages);
 });
 
 app.MapGet("/env", [Authorize]() =>

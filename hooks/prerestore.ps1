@@ -205,5 +205,18 @@ $clientSecret = $demoClient.clientSecret;
 azd env set AUTHLETE_CLIENT_ID $demoClient.clientId;
 azd env set AUTHLETE_CLIENT_SECRET $clientSecret;
 
+$azureOpenAIEndPoint = & azd env get-value AZURE_OPENAI_ENDPOINT 2>$null;
+if ($LASTEXITCODE -eq 1) {
+    $azureOpenAIEndPoint = Read-Host "Enter Azure OpenAI Endpoint";
+}
+
+$azureOpenAIKey = & azd env get-value AZURE_OPENAI_KEY 2>$null;
+if ($LASTEXITCODE -eq 1) {
+    $azureOpenAIKey = Read-Host -MaskInput "Enter Azure OpenAI Key";
+}
+
+azd env set AZURE_OPENAI_ENDPOINT $azureOpenAIEndPoint;
+azd env set AZURE_OPENAI_KEY $azureOpenAIKey;
+
 
 
