@@ -6,7 +6,7 @@ RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs
 
-RUN curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.407 --install-dir /ubuntu/.dotnet
+RUN curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 9.0.203 --install-dir /ubuntu/.dotnet
     
 ENV DOTNET_ROOT /ubuntu/.dotnet
 ENV PATH "${PATH}:${DOTNET_ROOT}:${DOTNET_ROOT}/tools"

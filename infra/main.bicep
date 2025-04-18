@@ -17,7 +17,7 @@ param clientId string
 @description('Client secret for client server')
 param clientSecret string
 
-param linuxFxVersion string = 'DOTNETCORE|8.0'
+param linuxFxVersion string = 'DOTNETCORE|9.0'
 
 // Tags that should be applied to all resources.
 //
@@ -85,6 +85,10 @@ resource client 'Microsoft.Web/sites@2023-01-01' = {
           name: 'AUTHLETE_AUTHENTICATION_SECRET'
           value: clientSecret
         }
+        {
+          name: 'RESOURCE_IDENTIFIER'
+          value: 'https://${api.properties.defaultHostName}'
+        }
       ]
     }
   }
@@ -106,7 +110,7 @@ resource clientAuthConfig 'Microsoft.Web/sites/config@2022-09-01' = {
     }
     globalValidation: {
       requireAuthentication: true
-      unauthenticatedClientAction: 'RedirectToLoginPage'
+      unauthenticatedClientAction: 'AllowAnonymous'
       redirectToProvider: 'authlete'
     }
     identityProviders: {
@@ -201,7 +205,7 @@ resource apiAuthConfig 'Microsoft.Web/sites/config@2022-09-01' = {
             clientCredential: {
               clientSecretSettingName: 'AUTHLETE_AUTHENTICATION_SECRET'
             }
-            clientId: api.properties.defaultHostName
+            clientId: 'https://${api.properties.defaultHostName}'
             openIdConnectConfiguration: {
               wellKnownOpenIdConfiguration: 'https://${authzServer.properties.defaultHostName}/.well-known/openid-configuration'
             }
