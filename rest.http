@@ -1,0 +1,5 @@
+POST https://jp.authlete.com/api/2184012228/auth/introspection
+Content-Type: application/json
+Authorization: Bearer WG5LvDq3dgzGdml6XyxHMBazXx2PFgZZ83RzssMEwAI
+
+{ "token": "VlLRHqV2JlLSMDqfR_6NQx7gvXlI5NnwPr4JQnH3PA0" }
