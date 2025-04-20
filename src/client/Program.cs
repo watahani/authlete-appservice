@@ -7,7 +7,6 @@ using Authlete.AppService.Demo;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.Identity.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +43,7 @@ app.MapGet("/", (HttpRequest req) =>
     var principal = req.HttpContext.User;
     if (principal.Identity?.IsAuthenticated == true)
     {
-        return Results.Text($"<h1>Hello {principal.Identity.Name} ({principal.GetNameIdentifierId()})</h1>", MediaTypeNames.Text.Html);
+        return Results.Text($"<h1>Hello {principal.Identity.Name}</h1>", MediaTypeNames.Text.Html);
     }
     else
     {
