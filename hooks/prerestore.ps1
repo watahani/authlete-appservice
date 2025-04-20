@@ -129,11 +129,11 @@ Write-Host -ForegroundColor Green "=============================================
 
 Write-Host '$service.supportedGrantTypes = @("AUTHORIZATION_CODE", "REFRESH_TOKEN");
 $service.supportedResponseTypes = @("CODE");
-$service.supportedAuthorizationDetailsTypes = @("authlete_mcp");'
+$service.supportedAuthorizationDetailsTypes = @("client-api", "service-api");'
 
 Set-OrAddProperty -Object $service -PropertyName "supportedGrantTypes" -Value @("AUTHORIZATION_CODE", "REFRESH_TOKEN");
 Set-OrAddProperty -Object $service -PropertyName "supportedResponseTypes" -Value @("CODE");
-Set-OrAddProperty -Object $service -PropertyName "supportedAuthorizationDetailsTypes" -Value @("authlete_mcp");
+Set-OrAddProperty -Object $service -PropertyName "supportedAuthorizationDetailsTypes" -Value  @("client-api", "service-api");
 Set-OrAddProperty -Object $service -PropertyName "claimShortcutRestrictive" -Value $false;
 
 $service = Invoke-RestMethod -Uri "${authleteBaseUrl}/api/${apiKey}/service/update" -ContentType "application/json" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes(($service | ConvertTo-Json -Depth 10))) -ErrorAction Stop
@@ -161,7 +161,11 @@ if (-not $demoClient) {
   "redirectUris": [],
   "tokenAuthMethod": "CLIENT_SECRET_POST",
   "attributes": [],
-  "idTokenSignAlg": "ES256"
+  "idTokenSignAlg": "ES256",
+  "authorizationDetailsTypes": [
+    "client-api",
+    "service-api"
+  ]
 }
 "@
     Write-Host "body prameter: $body"
@@ -179,6 +183,7 @@ $demoClient.grantTypes = @("AUTHORIZATION_CODE", "REFRESH_TOKEN");
 $demoClient.responseTypes = @("CODE", "ID_TOKEN", "CODE_ID_TOKEN");
 $demoClient.tokenAuthMethod = "CLIENT_SECRET_POST";
 $demoClient.idTokenSignAlg = "ES256";'
+$demoClient.authorizationDetailsTypes = @("client-api", "service-api");
 
     Set-OrAddProperty -Object $demoClient -PropertyName "clientType" -Value "CONFIDENTIAL";
     Set-OrAddProperty -Object $demoClient -PropertyName "applicationType" -Value "WEB";
@@ -186,6 +191,7 @@ $demoClient.idTokenSignAlg = "ES256";'
     Set-OrAddProperty -Object $demoClient -PropertyName "responseTypes" -Value @("CODE", "ID_TOKEN", "CODE_ID_TOKEN");
     Set-OrAddProperty -Object $demoClient -PropertyName "tokenAuthMethod" -Value "CLIENT_SECRET_POST";
     Set-OrAddProperty -Object $demoClient -PropertyName "idTokenSignAlg" -Value "ES256";
+    Set-OrAddProperty -Object $demoClient -PropertyName "authorizationDetailsTypes" -Value @("client-api", "service-api");
 
     $demoClient = Invoke-RestMethod -Uri "${authleteBaseUrl}/api/${apiKey}/client/update/$($demoClient.clientId)" -ContentType "application/json" -Method POST `
         -Headers $headers `
