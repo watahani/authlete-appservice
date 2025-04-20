@@ -24,7 +24,7 @@ builder.Services
         AppServiceAuthenticationExternalProviderDefaults.AuthenticationScheme, options =>
         {
             options.responseStatusCode = StatusCodes.Status302Found;
-            options.authorizationOpetionQueries = "resource=" + Environment.GetEnvironmentVariable("RESOURCE_IDENTIFIER") + "&scope=openid%20profile%20email";
+            options.authorizationOpetionQueries = "resource=" + Environment.GetEnvironmentVariable("RESOURCE_IDENTIFIER");
             options.nameType = "preferred_username";
             options.roleType = ClaimsIdentity.DefaultRoleClaimType;
         }
