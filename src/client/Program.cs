@@ -80,9 +80,9 @@ app.MapGet("/startAuth",[Authorize] async (HttpRequest req) =>
 {
     var referer = req.Headers["Referer"].ToString();
     var queries = req.Query;
-    queries.Add("state", referer);
-    queries.Add("resource", RESOURCE_IDENTIFIER);
-    rerurn Results.Redirect($"/.auth/login/authlete?{queries.ToString()}");
+    queries.Append(new ("post_logout_redirect_uri", referer));
+    queries.Append(new ("resource", RESOURCE_IDENTIFIER));
+    return Results.Redirect($"/.auth/login/authlete?{queries.ToString()}");
 });
 
 app.MapPost("/callApi", [Authorize] async ([FromBody] List<Microsoft.Extensions.AI.ChatMessage> messages, HttpRequest req, IHttpClientFactory factory, [FromServices] ILogger<Program> log, AzureOpenAIClient azureOpenAIClient) =>
