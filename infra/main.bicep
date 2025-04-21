@@ -1,5 +1,5 @@
 targetScope = 'resourceGroup'
-var appServicePlanSku = 'S1'
+var appServicePlanSku = 'B1'
 var appServicePlanCapacity = 1
 
 @minLength(1)
@@ -55,6 +55,7 @@ resource authzServer 'Microsoft.Web/sites@2023-01-01' = {
     siteConfig: {
       linuxFxVersion: 'TOMCAT|9.0-java21'
       minTlsVersion: '1.2'
+      alwaysOn: true
       ftpsState: 'FtpsOnly'
       appSettings: [
         {
@@ -79,6 +80,7 @@ resource client 'Microsoft.Web/sites@2023-01-01' = {
     siteConfig: {
       linuxFxVersion: linuxFxVersion
       minTlsVersion: '1.2'
+      alwaysOn: true
       ftpsState: 'FtpsOnly'
       appSettings: [
         {
@@ -169,6 +171,7 @@ resource api 'Microsoft.Web/sites@2023-01-01' = {
     siteConfig: {
       linuxFxVersion: linuxFxVersion
       minTlsVersion: '1.2'
+      alwaysOn: true
       ftpsState: 'FtpsOnly'
       appSettings: [
         {
