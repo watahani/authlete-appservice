@@ -11,16 +11,16 @@ hooks:
     run: ./hooks/postdeploy.ps1
     interactive: true
 services:
-  authz:
+  authz-mcp:
     project: ./src/java-oauth-server
     language: java
     type: war
     host: appservice
-  client:
+  client-mcp:
     project: ./src/client
     language: csharp
     host: appservice
-  api:
+  api-mcp:
     project: ./src/api
     language: csharp
     host: appservice

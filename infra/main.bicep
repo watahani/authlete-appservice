@@ -67,7 +67,7 @@ resource authzServer 'Microsoft.Web/sites@2023-01-01' = {
     }
   }
   tags: union(tags, {
-    'azd-service-name': 'authz'
+    'azd-service-name': 'authz-mcp'
   })
 }
 
@@ -104,7 +104,7 @@ resource client 'Microsoft.Web/sites@2023-01-01' = {
     }
   }
   tags: union(tags, {
-    'azd-service-name': 'client'
+    'azd-service-name': 'client-mcp'
   })
   dependsOn: [
     authzServer
@@ -191,7 +191,7 @@ resource api 'Microsoft.Web/sites@2023-01-01' = {
     }
   }
   tags: union(tags, {
-    'azd-service-name': 'api'
+    'azd-service-name': 'api-mcp'
   })
   dependsOn: [
     authzServer
