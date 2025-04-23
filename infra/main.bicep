@@ -58,10 +58,6 @@ resource authzServer 'Microsoft.Web/sites@2023-01-01' = {
       alwaysOn: true
       ftpsState: 'FtpsOnly'
       appSettings: [
-        {
-          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
-          value: 'true'
-        }
       ]
     }
   }
