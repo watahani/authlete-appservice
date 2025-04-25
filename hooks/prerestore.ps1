@@ -28,7 +28,7 @@ Write-Host -ForegroundColor Red "⚠️  This script will overwrite the existing
 Write-Host -ForegroundColor Red "⚠️  If you want to keep the existing settings, please create new service. "
 Write-Host -ForegroundColor Red "==========================================================================`n"
 
-Write-Host -ForegroundColor Red "Press Enter Y to continue"
+Write-Host -ForegroundColor Red "Enter Y to continue"
 
 $y = Read-Host "(Y/N)"
 
@@ -49,6 +49,11 @@ if ($LASTEXITCODE -eq 1) {
     $apiKey = Read-Host "Enter Authlete Service ID";
 }
 
+$apiToken = & azd env get-value AUTHLETE_SERVICE_API_ACCESS_TOKEN 2>$null;
+if ($LASTEXITCODE -eq 1) {
+    $apiToken = Read-Host -MaskInput "Enter Authlete Service Access Token";
+}
+
 $authleteBaseUrl = & azd env get-value AUTHLETE_BASE_URL 2>$null;
 if ($LASTEXITCODE -eq 1) {
     $authleteBaseUrl = Read-Host "Enter Authlete Base URL (example: https://jp.authlete.com)";
@@ -57,12 +62,6 @@ if ($LASTEXITCODE -eq 1) {
         exit 1;
     }
 }
-
-$apiToken = & azd env get-value AUTHLETE_SERVICE_API_ACCESS_TOKEN 2>$null;
-if ($LASTEXITCODE -eq 1) {
-    $apiToken = Read-Host -MaskInput "Enter Authlete Service Access Token";
-}
-
 
 try {
     $headers = @{Authorization = "Bearer $apiToken" }
