@@ -23,7 +23,7 @@ namespace Authlete.AppService.Demo
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
 
-            ClaimsPrincipal? claimsPrincipal = AAppServiceAuthenticationExternalProviderInformation.GetUser(Context.Request.Headers, Options.nameType, Options.roleType);
+            ClaimsPrincipal? claimsPrincipal = AppServiceAuthenticationExternalProviderInformation.GetUser(Context.Request.Headers, Options.nameType, Options.roleType);
             if (claimsPrincipal != null)
             {
                 AuthenticationTicket ticket = new AuthenticationTicket(claimsPrincipal, AppServiceAuthenticationExternalProviderDefaults.AuthenticationScheme);

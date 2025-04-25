@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace Authlete.AppService.Demo
 {
     
-    public static class AAppServiceAuthenticationExternalProviderInformation{
+    public static class AppServiceAuthenticationExternalProviderInformation{
         internal static string AppServiceIdPHeader = "X-MS-CLIENT-PRINCIPAL-IDP";
         internal static string AppServiceClamsHeader = "X-MS-CLIENT-PRINCIPAL";
         public static ClaimsPrincipal? GetUser(IHeaderDictionary headers, string? nameType, string? roleType)
