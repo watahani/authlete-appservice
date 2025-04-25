@@ -80,7 +80,7 @@ app.MapGet("/startAuth",[Authorize] async (HttpRequest req) =>
 {
     var referer = req.Headers["Referer"].ToString();
     var queries = req.Query;
-    queries.Append(new ("post_logout_redirect_uri", referer));
+    queries.Append(new ("state", referer));
     queries.Append(new ("resource", RESOURCE_IDENTIFIER));
     return Results.Redirect($"/.auth/login/authlete?{queries.ToString()}");
 });
